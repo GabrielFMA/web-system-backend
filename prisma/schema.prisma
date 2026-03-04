@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  uid         String   @unique
+  enrollment  String?
+  name        String
+  email       String   @unique
+  phone       String?
+  description String?
+  createdAt   DateTime @default(now())
+
+  groups      UserGroup[]
+  permissions UserPermission[]
+  sessions    Session[]
+}
+
+model Group {
+  id          Int     @id @default(autoincrement())
+  code        String  @unique
+  title       String
+  description String?
+
+  users       UserGroup[]
+  permissions GroupPermission[]
+}
+
+model Permission {
+  id   Int    @id @default(autoincrement())
+  code String @unique
+
+  groups GroupPermission[]
+  users  UserPermission[]
+}
+
+model UserGroup {
+  userId  Int
+  groupId Int
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@id([userId, groupId])
+}
+
+model GroupPermission {
+  groupId      Int
+  permissionId Int
+
+  group      Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, permissionId])
+}
+
+model UserPermission {
+  userId       Int
+  permissionId Int
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([userId, permissionId])
+}
+
+model Session {
+  id        String    @id @default(uuid())
+  userId    Int
+  blocked   Boolean   @default(false)
+  revoked   Boolean   @default(false)
+  isOnline  Boolean   @default(false)
+  device    String?
+  lastLogin DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
