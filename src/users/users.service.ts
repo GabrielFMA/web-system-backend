@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PermissionEffect } from '@prisma/client'
 import { CreateUserDto } from './dto/create-user.dto';
+import * as bcrypt from 'bcrypt';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class UsersService {
@@ -9,9 +12,12 @@ export class UsersService {
   async create(data: CreateUserDto) {
     return this.prisma.$transaction(async (prisma) => {
 
+      const hashedPassword = await bcrypt.hash(data.password, 10);
+
       const user = await prisma.user.create({
         data: {
-          uid: data.uid,
+          uid: randomUUID(),
+          password: hashedPassword,
           name: data.name,
           email: data.email,
           phone: data.phone,
@@ -20,9 +26,9 @@ export class UsersService {
         },
       });
 
-      if (data.groupCodes?.length) {
+      if (data.groupEnrollments?.length) {
         const groups = await prisma.group.findMany({
-          where: { code: { in: data.groupCodes } },
+          where: { enrollment: { in: data.groupEnrollments } },
         });
 
         await prisma.userGroup.createMany({
@@ -39,10 +45,11 @@ export class UsersService {
         });
 
         await prisma.userPermission.createMany({
-          data: permissions.map((permission) => ({
+          data: permissions.map(permission => ({
             userId: user.id,
             permissionId: permission.id,
-          })),
+            effect: PermissionEffect.ALLOW
+          }))
         });
       }
 

@@ -1,10 +1,33 @@
+import { IsEmail, IsString, MinLength, IsOptional, IsArray } from 'class-validator'
+
 export class CreateUserDto {
-  uid: string;
-  name: string;
-  email: string;
+
+  @IsString()
+  enrollment!: string;
+
+  @IsString()
+  name!: string;
+
+  @IsEmail()
+  email!: string;
+
+  @IsString()
+  @MinLength(6)
+  password!: string;
+
+  @IsOptional()
+  @IsString()
   phone?: string;
+
+  @IsOptional()
+  @IsString()
   description?: string;
-  enrollment?: string;
-  groupCodes?: string[];
+
+  @IsOptional()
+  @IsArray()
+  groupEnrollments?: string[];
+
+  @IsOptional()
+  @IsArray()
   permissionCodes?: string[];
 }

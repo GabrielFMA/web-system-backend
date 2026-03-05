@@ -3,30 +3,54 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "postgresql" // ajuste se for mysql/sqlite
   url      = env("DATABASE_URL")
 }
 
+enum PermissionEffect {
+  ALLOW
+  DENY
+}
+
 model User {
-  id          Int      @id @default(autoincrement())
-  uid         String   @unique
-  enrollment  String?
-  name        String
-  email       String   @unique
+  id         Int     @id @default(autoincrement())
+  uid        String  @unique
+  enrollment String  @unique
+
+  name     String
+  email    String  @unique
+  password String
+
   phone       String?
   description String?
-  createdAt   DateTime @default(now())
 
   groups      UserGroup[]
   permissions UserPermission[]
   sessions    Session[]
+  meta        UserMeta?
+}
+
+model UserMeta {
+  userId Int @id
+
+  blocked     Boolean @default(false)
+  invisible   Boolean @default(false)
+  invisibleAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Group {
-  id          Int     @id @default(autoincrement())
-  code        String  @unique
-  title       String
+  id         Int    @id @default(autoincrement())
+  enrollment String @unique
+  title      String
   description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   users       UserGroup[]
   permissions GroupPermission[]
@@ -64,6 +88,8 @@ model UserPermission {
   userId       Int
   permissionId Int
 
+  effect PermissionEffect
+
   user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
@@ -71,13 +97,17 @@ model UserPermission {
 }
 
 model Session {
-  id        String    @id @default(uuid())
+  id        String   @id @default(uuid())
   userId    Int
-  blocked   Boolean   @default(false)
-  revoked   Boolean   @default(false)
-  isOnline  Boolean   @default(false)
+
   device    String?
+  isOnline  Boolean  @default(false)
+  revoked   Boolean  @default(false)
+
   lastLogin DateTime?
+  lastSeen  DateTime?
+
+  createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
