@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql" // ajuste se for mysql/sqlite
-  url      = env("DATABASE_URL")
+  url = env("DATABASE_URL")
 }
 
 enum PermissionEffect {

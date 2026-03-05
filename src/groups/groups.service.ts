@@ -8,7 +8,6 @@ export class GroupsService {
 
   async create(data: CreateGroupDto) {
     return this.prisma.$transaction(async (prisma) => {
-
       const group = await prisma.group.create({
         data: {
           enrollment: data.enrollment,

@@ -44,8 +44,8 @@ export class AuthService {
     }
 
     const permissions =
-      user.groups.flatMap(g =>
-        g.group.permissions.map(p => p.permission.code),
+      user.groups.flatMap((g) =>
+        g.group.permissions.map((p) => p.permission.code),
       ) ?? [];
 
     const payload = {
