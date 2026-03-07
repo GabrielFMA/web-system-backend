@@ -1,9 +1,18 @@
-import { Controller, Post, Body, UseGuards, Param, ParseIntPipe, Get } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Param,
+  Get,
+  Patch,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import { Permissions } from 'src/common/decorators/permissions.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -25,8 +34,25 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions('010001')
-  @Get(':id/permissions')
-  getPermissions(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.getEffectivePermissions(id);
+  @Get(':enrollment/permissions')
+  getPermissions(@Param('enrollment') enrollment: string) {
+    return this.usersService.getEffectivePermissions(enrollment);
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions('010001')
+  @Get(':enrollment')
+  findOne(@Param('enrollment') enrollment: string) {
+    return this.usersService.findOne(enrollment);
+  }
+
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions('010001')
+  @Patch(':enrollment')
+  update(
+    @Param('enrollment') enrollment: string,
+    @Body() body: UpdateUserDto,
+  ) {
+    return this.usersService.update(enrollment, body);
   }
 }

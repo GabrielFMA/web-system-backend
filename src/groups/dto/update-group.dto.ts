@@ -1,11 +1,13 @@
 import { IsArray, IsOptional, IsString } from 'class-validator';
 
-export class CreateGroupDto {
+export class UpdateGroupDto {
+  @IsOptional()
   @IsString()
-  enrollment!: string;
+  enrollment?: string;
 
+  @IsOptional()
   @IsString()
-  title!: string;
+  title?: string;
 
   @IsOptional()
   @IsString()

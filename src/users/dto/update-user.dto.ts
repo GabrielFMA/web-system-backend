@@ -1,19 +1,22 @@
-import { IsEmail, IsString, MinLength, IsOptional, IsArray } from 'class-validator'
+import { IsArray, IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
 
-export class CreateUserDto {
-
+export class UpdateUserDto {
+  @IsOptional()
   @IsString()
-  enrollment!: string;
+  enrollment?: string;
 
+  @IsOptional()
   @IsString()
-  name!: string;
+  name?: string;
 
+  @IsOptional()
   @IsEmail()
-  email!: string;
+  email?: string;
 
+  @IsOptional()
   @IsString()
   @MinLength(6)
-  password!: string;
+  password?: string;
 
   @IsOptional()
   @IsString()
@@ -25,17 +28,21 @@ export class CreateUserDto {
 
   @IsOptional()
   @IsArray()
+  @IsString({ each: true })
   groupEnrollments?: string[];
 
   @IsOptional()
   @IsArray()
+  @IsString({ each: true })
   permissionCodes?: string[];
 
   @IsOptional()
   @IsArray()
+  @IsString({ each: true })
   groups?: string[];
 
   @IsOptional()
   @IsArray()
+  @IsString({ each: true })
   permissions?: string[];
 }
