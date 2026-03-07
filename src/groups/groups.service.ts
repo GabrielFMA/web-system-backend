@@ -21,11 +21,7 @@ export class GroupsService {
 
   async create(data: CreateGroupDto) {
     return this.prisma.$transaction(async (prisma) => {
-<<<<<<< HEAD
       const createdGroup = await prisma.group.create({
-=======
-      const group = await prisma.group.create({
->>>>>>> 0ff9995aabce9ecb04b60bcbc38d06c8db9845bf
         data: {
           enrollment: data.enrollment,
           title: data.title,
@@ -66,7 +62,6 @@ export class GroupsService {
 
     return groups.map((group) => this.toPublicGroup(group));
   }
-<<<<<<< HEAD
 
   async update(enrollment: string, data: UpdateGroupDto) {
     return this.prisma.$transaction(async (prisma) => {
@@ -194,7 +189,9 @@ export class GroupsService {
       enrollment: group.enrollment,
       title: group.title,
       description: group.description ?? null,
-      permissions: group.permissions.map((permissionLink: any) => permissionLink.permission.code),
+      permissions: group.permissions.map(
+        (permissionLink: any) => permissionLink.permission.code,
+      ),
     };
   }
 
@@ -253,6 +250,4 @@ export class GroupsService {
 
     return [...effectivePermissions];
   }
-=======
->>>>>>> 0ff9995aabce9ecb04b60bcbc38d06c8db9845bf
 }

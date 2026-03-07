@@ -19,7 +19,6 @@ export class AuthController {
   login(@Body() body: LoginDto) {
     return this.authService.login(body);
   }
-<<<<<<< HEAD
 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
@@ -41,6 +40,4 @@ export class AuthController {
   sessions(@Req() request: AuthenticatedRequest) {
     return this.authService.getUserSessions(request.user.userId);
   }
-=======
->>>>>>> 0ff9995aabce9ecb04b60bcbc38d06c8db9845bf
 }

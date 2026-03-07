@@ -16,12 +16,9 @@ export class GroupsController {
   findAll() {
     return this.groupsService.findAll();
   }
-<<<<<<< HEAD
 
   @Patch(':enrollment')
   update(@Param('enrollment') enrollment: string, @Body() body: UpdateGroupDto) {
     return this.groupsService.update(enrollment, body);
   }
-=======
->>>>>>> 0ff9995aabce9ecb04b60bcbc38d06c8db9845bf
 }
