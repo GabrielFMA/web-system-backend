@@ -51,9 +51,15 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+<<<<<<< HEAD
     const groupPermissions =
       user.groups.flatMap((group) =>
         group.group.permissions.map((permission) => permission.permission.code),
+=======
+    const permissions =
+      user.groups.flatMap((g) =>
+        g.group.permissions.map((p) => p.permission.code),
+>>>>>>> 0ff9995aabce9ecb04b60bcbc38d06c8db9845bf
       ) ?? [];
 
     const allowDirectPermissions = user.permissions
@@ -96,6 +102,7 @@ export class AuthService {
       session_id: session.id,
     };
   }
+<<<<<<< HEAD
 
   async logout(userId: number, sessionId: string) {
     await this.prisma.session.updateMany({
@@ -160,4 +167,6 @@ export class AuthService {
       },
     });
   }
+=======
+>>>>>>> 0ff9995aabce9ecb04b60bcbc38d06c8db9845bf
 }

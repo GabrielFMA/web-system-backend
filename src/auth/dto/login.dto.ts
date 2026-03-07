@@ -6,8 +6,11 @@ export class LoginDto {
 
   @IsString()
   password!: string;
+<<<<<<< HEAD
 
   @IsOptional()
   @IsString()
   device?: string;
+=======
+>>>>>>> 0ff9995aabce9ecb04b60bcbc38d06c8db9845bf
 }

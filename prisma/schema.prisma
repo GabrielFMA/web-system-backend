@@ -3,7 +3,11 @@ generator client {
 }
 
 datasource db {
+<<<<<<< HEAD
   provider = "postgresql"
+=======
+  provider = "postgresql" // ajuste se for mysql/sqlite
+>>>>>>> 0ff9995aabce9ecb04b60bcbc38d06c8db9845bf
   url = env("DATABASE_URL")
 }
 
