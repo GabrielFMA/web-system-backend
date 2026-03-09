@@ -25,14 +25,14 @@ async function main() {
     }
   })
 
-  const hashed = await bcrypt.hash('admin123', 10)
+  const hashed = await bcrypt.hash('123456', 10)
 
   const user = await prisma.user.create({
     data: {
       uid: randomUUID(),
       enrollment: 'admin',
       name: 'Admin',
-      email: 'admin@admin.com',
+      email: 'admin@gmail.com',
       password: hashed
     }
   })

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { PermissionEffect, Prisma } from '@prisma/client';
+import { PermissionEffect, Prisma, SessionRetentionMode } from '@prisma/client';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
@@ -21,6 +21,8 @@ type PublicUser = {
     invisibleAt: Date | null;
     createdAt: Date | null;
     updatedAt: Date | null;
+    maxSessions: number | null;
+    sessionRetentionMode: SessionRetentionMode | null;
   };
   groupEnrollments: string[];
   groups: Array<{
@@ -103,6 +105,12 @@ export class UsersService {
 
   async findAll() {
     const users = await this.prisma.user.findMany({
+      where: {
+        OR: [
+          { meta: { is: null } },
+          { meta: { is: { invisible: false } } },
+        ],
+      },
       include: this.publicUserInclude(),
     });
 
@@ -133,16 +141,17 @@ export class UsersService {
 
       const targetUser = await prisma.user.findUnique({
         where: { enrollment },
-        select: {
-          id: true,
-          uid: true,
-          enrollment: true,
+        include: {
+          meta: true,
         },
       });
 
       if (!targetUser) {
         throw new NotFoundException('User not found');
       }
+
+      const shouldUpdateMeta =
+        data.blocked !== undefined || data.invisible !== undefined;
 
       const rawPassword = data.password;
       const isPasswordChanged = typeof rawPassword === 'string';
@@ -207,6 +216,63 @@ export class UsersService {
               effect: PermissionEffect.ALLOW,
             })),
           });
+        }
+      }
+
+      if (shouldUpdateMeta) {
+        const currentBlocked = !!targetUser.meta?.blocked;
+        const currentInvisible = !!targetUser.meta?.invisible;
+
+        const nextInvisible =
+          data.invisible !== undefined ? data.invisible : currentInvisible;
+        const nextBlocked =
+          nextInvisible === true
+            ? true
+            : data.blocked !== undefined
+              ? data.blocked
+              : currentBlocked;
+
+        const nextInvisibleAt = nextInvisible
+          ? currentInvisible
+            ? targetUser.meta?.invisibleAt ?? new Date()
+            : new Date()
+          : null;
+
+        await prisma.userMeta.upsert({
+          where: { userId: targetUser.id },
+          create: {
+            userId: targetUser.id,
+            blocked: nextBlocked,
+            invisible: nextInvisible,
+            invisibleAt: nextInvisibleAt,
+          },
+          update: {
+            blocked: nextBlocked,
+            invisible: nextInvisible,
+            invisibleAt: nextInvisibleAt,
+          },
+        });
+
+        if (nextBlocked || nextInvisible) {
+          await prisma.session.updateMany({
+            where: {
+              userId: targetUser.id,
+              revoked: false,
+            },
+            data: {
+              revoked: true,
+              isOnline: false,
+              lastSeen: new Date(),
+            },
+          });
+
+          this.realtime.emitToUser(targetUser.id, 'session_invalidated', {
+            userUid: targetUser.uid,
+            userEnrollment: targetUser.enrollment,
+            reason: nextInvisible ? 'user_invisible' : 'user_blocked',
+          });
+
+          await this.realtime.disconnectUserSessions(targetUser.id);
         }
       }
 
@@ -372,6 +438,8 @@ export class UsersService {
         invisibleAt: user.meta?.invisibleAt ?? null,
         createdAt: user.meta?.createdAt ?? null,
         updatedAt: user.meta?.updatedAt ?? null,
+        maxSessions: user.meta?.maxSessions ?? null,
+        sessionRetentionMode: user.meta?.sessionRetentionMode ?? null,
       },
       groupEnrollments: user.groups.map((groupLink: any) => groupLink.group.enrollment),
       groups: user.groups.map((groupLink: any) => ({

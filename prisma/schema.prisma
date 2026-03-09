@@ -3,17 +3,18 @@ generator client {
 }
 
 datasource db {
-<<<<<<< HEAD
-  provider = "postgresql"
-=======
   provider = "postgresql" // ajuste se for mysql/sqlite
->>>>>>> 0ff9995aabce9ecb04b60bcbc38d06c8db9845bf
   url = env("DATABASE_URL")
 }
 
 enum PermissionEffect {
   ALLOW
   DENY
+}
+
+enum SessionRetentionMode {
+  DELETE
+  REVOKE
 }
 
 model User {
@@ -40,11 +41,24 @@ model UserMeta {
   blocked     Boolean @default(false)
   invisible   Boolean @default(false)
   invisibleAt DateTime?
+  maxSessions Int?
+  sessionRetentionMode SessionRetentionMode?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SystemConfig {
+  id Int @id @default(1)
+
+  maxSessionsGlobal Int @default(0)
+  sessionRetentionMode SessionRetentionMode @default(REVOKE)
+  idleTimeoutMinutes Int @default(30)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Group {

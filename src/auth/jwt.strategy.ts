@@ -40,6 +40,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
       include: {
+        meta: true,
         permissions: {
           include: {
             permission: true,
@@ -63,6 +64,22 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     if (!user) {
       throw new UnauthorizedException('User not found');
+    }
+
+    if (user.meta?.blocked || user.meta?.invisible) {
+      await this.prisma.session.updateMany({
+        where: {
+          id: payload.sid,
+          userId: payload.sub,
+          revoked: false,
+        },
+        data: {
+          revoked: true,
+          isOnline: false,
+          lastSeen: new Date(),
+        },
+      });
+      throw new UnauthorizedException('User is blocked');
     }
 
     const allowedDirectPermissions = user.permissions

@@ -1,4 +1,11 @@
-import { IsArray, IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEmail,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class UpdateUserDto {
   @IsOptional()
@@ -45,4 +52,12 @@ export class UpdateUserDto {
   @IsArray()
   @IsString({ each: true })
   permissions?: string[];
+
+  @IsOptional()
+  @IsBoolean()
+  blocked?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  invisible?: boolean;
 }
